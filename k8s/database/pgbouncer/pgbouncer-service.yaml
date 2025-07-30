@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer-service
+  namespace: default
+  labels:
+    app: pgbouncer
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 6432
+    protocol: TCP
+    name: pgbouncer
+  selector:
+    app: pgbouncer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer-headless
+  namespace: default
+  labels:
+    app: pgbouncer
+    tier: database
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - port: 5432
+    targetPort: 6432
+    protocol: TCP
+    name: pgbouncer
+  selector:
+    app: pgbouncer

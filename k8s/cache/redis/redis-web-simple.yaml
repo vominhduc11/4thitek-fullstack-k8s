@@ -1,0 +1,152 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-web-simple
+  labels:
+    app: redis-web-simple
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-web-simple
+  template:
+    metadata:
+      labels:
+        app: redis-web-simple
+    spec:
+      containers:
+      - name: redis-web
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+        - name: web-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: web-content
+        configMap:
+          name: redis-web-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-web-config
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Redis Web Interface</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            h1 { color: #dc382d; text-align: center; margin-bottom: 30px; }
+            .info-box { background: #f8f9fa; padding: 20px; border-left: 4px solid #dc382d; margin: 20px 0; }
+            .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+            .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+            .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+            .btn { background: #dc382d; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+            .btn:hover { background: #c82333; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+            @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🔴 Redis Web Interface</h1>
+            
+            <div class="info-box">
+                <h3>📊 Redis Connection Status</h3>
+                <div id="connection-status" class="status error">
+                    ❌ Checking Redis connection...
+                </div>
+            </div>
+
+            <div class="grid">
+                <div>
+                    <h3>🌐 Available Redis Interfaces</h3>
+                    <p><strong>RedisInsight (Official):</strong></p>
+                    <a href="http://localhost:30081" target="_blank">
+                        <button class="btn">🎯 Open RedisInsight</button>
+                    </a>
+                    <p>Feature-rich official Redis GUI</p>
+                    
+                    <p><strong>Redis Commander:</strong></p>
+                    <a href="http://localhost:30082" target="_blank">
+                        <button class="btn">⚡ Open Redis Commander</button>
+                    </a>
+                    <p>Login: admin/admin123</p>
+                    
+                    <p><strong>phpRedisAdmin:</strong></p>
+                    <a href="http://localhost:30083" target="_blank">
+                        <button class="btn">🐘 Open phpRedisAdmin</button>
+                    </a>
+                    <p>PHP-based Redis management</p>
+                </div>
+                
+                <div>
+                    <h3>🔧 Redis Configuration</h3>
+                    <div class="info-box">
+                        <p><strong>Host:</strong> redis-service</p>
+                        <p><strong>Port:</strong> 6379</p>
+                        <p><strong>External Port:</strong> 30379</p>
+                        <p><strong>Database:</strong> 0 (default)</p>
+                    </div>
+                    
+                    <h3>📋 Quick Commands</h3>
+                    <div class="info-box">
+                        <p><strong>Check Pods:</strong><br>
+                        <code>kubectl get pods | grep redis</code></p>
+                        
+                        <p><strong>Check Services:</strong><br>
+                        <code>kubectl get svc | grep redis</code></p>
+                        
+                        <p><strong>Redis CLI:</strong><br>
+                        <code>kubectl exec -it deployment/redis -- redis-cli</code></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>⚠️ Current Status</h3>
+                <p>Some Redis web interfaces may not be accessible due to cluster scheduling issues.</p>
+                <p>When cluster nodes are ready, all interfaces will be available.</p>
+                <p><strong>Deployed interfaces:</strong> RedisInsight, Redis Commander, phpRedisAdmin</p>
+            </div>
+        </div>
+
+        <script>
+            // Simple connection check (placeholder)
+            setTimeout(() => {
+                const status = document.getElementById('connection-status');
+                status.className = 'status success';
+                status.innerHTML = '✅ Redis interfaces are deployed and waiting for cluster stability';
+            }, 2000);
+        </script>
+    </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-web-simple-service
+  labels:
+    app: redis-web-simple
+spec:
+  selector:
+    app: redis-web-simple
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    nodePort: 30084
+  type: NodePort

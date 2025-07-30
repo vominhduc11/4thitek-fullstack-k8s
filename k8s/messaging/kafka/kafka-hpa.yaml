@@ -1,0 +1,15 @@
+# NOTE: This HPA requires metrics-server to be installed in the cluster
+# For demonstration purposes - would need proper metrics setup in production
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kafka-hpa-basic
+  namespace: kafka
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: kafka
+  minReplicas: 3
+  maxReplicas: 6  # Conservative max for testing
+  targetCPUUtilizationPercentage: 5  # Lower threshold for demo purposes

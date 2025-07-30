@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-insight
+  labels:
+    app: redis-insight
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-insight
+  template:
+    metadata:
+      labels:
+        app: redis-insight
+    spec:
+      containers:
+      - name: redis-insight
+        image: redislabs/redisinsight:latest
+        ports:
+        - containerPort: 8001
+        env:
+        - name: RITRUSTEDORIGINS
+          value: "http://localhost:30081"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: redis-insight-data
+          mountPath: /db
+      volumes:
+      - name: redis-insight-data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-insight-service
+  labels:
+    app: redis-insight
+spec:
+  selector:
+    app: redis-insight
+  ports:
+  - name: http
+    port: 8001
+    targetPort: 8001
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-insight-external
+  labels:
+    app: redis-insight
+spec:
+  selector:
+    app: redis-insight
+  ports:
+  - name: http
+    port: 8001
+    targetPort: 8001
+    nodePort: 30081
+  type: NodePort

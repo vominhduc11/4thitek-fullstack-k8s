@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  namespace: kafka
+  labels:
+    app: zookeeper
+spec:
+  serviceName: zookeeper-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      initContainers:
+      - name: fix-permissions
+        image: busybox:1.35
+        command: ['sh', '-c', 'mkdir -p /var/lib/zookeeper/data /var/lib/zookeeper/logs && chown -R 1000:1000 /var/lib/zookeeper && chmod -R 755 /var/lib/zookeeper']
+        volumeMounts:
+        - name: zookeeper-data
+          mountPath: /var/lib/zookeeper/data
+        - name: zookeeper-logs
+          mountPath: /var/lib/zookeeper/logs
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: zookeeper
+        image: confluentinc/cp-zookeeper:7.4.0
+        ports:
+        - containerPort: 2181
+          name: client
+        - containerPort: 2888
+          name: follower
+        - containerPort: 3888
+          name: election
+        env:
+        - name: ZOOKEEPER_CLIENT_PORT
+          value: "2181"
+        - name: ZOOKEEPER_TICK_TIME
+          value: "2000"
+        - name: ZOOKEEPER_INIT_LIMIT
+          value: "10"
+        - name: ZOOKEEPER_SYNC_LIMIT
+          value: "5"
+        - name: ZOOKEEPER_AUTOPURGE_SNAP_RETAIN_COUNT
+          value: "3"
+        - name: ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL
+          value: "24"
+        - name: ZOOKEEPER_MAX_CLIENT_CNXNS
+          value: "60"
+        - name: ZOOKEEPER_STANDALONE_ENABLED
+          value: "false"
+        - name: ZOOKEEPER_ADMIN_ENABLE_SERVER
+          value: "true"
+        - name: ZOOKEEPER_ADMIN_SERVER_PORT
+          value: "8080"
+        - name: ZOOKEEPER_SERVER_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: ZOOKEEPER_SERVERS
+          value: "zookeeper-0.zookeeper-headless.kafka.svc.cluster.local:2888:3888;zookeeper-1.zookeeper-headless.kafka.svc.cluster.local:2888:3888;zookeeper-2.zookeeper-headless.kafka.svc.cluster.local:2888:3888"
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          
+          # Extract server ID from hostname (zookeeper-0 -> 1, zookeeper-1 -> 2, etc.)
+          SERVER_ID=$((${HOSTNAME##*-} + 1))
+          echo "Setting ZOOKEEPER_SERVER_ID to $SERVER_ID"
+          export ZOOKEEPER_SERVER_ID=$SERVER_ID
+          
+          # Create myid file
+          echo $SERVER_ID > /var/lib/zookeeper/data/myid
+          
+          # Start Zookeeper
+          exec /etc/confluent/docker/run
+        volumeMounts:
+        - name: zookeeper-data
+          mountPath: /var/lib/zookeeper/data
+        - name: zookeeper-logs
+          mountPath: /var/lib/zookeeper/logs
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command: ["/bin/bash", "-c", "echo ruok | nc localhost 2181"]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command: ["/bin/bash", "-c", "echo ruok | nc localhost 2181"]
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - zookeeper
+              topologyKey: kubernetes.io/hostname
+  volumeClaimTemplates:
+  - metadata:
+      name: zookeeper-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: local-storage
+      resources:
+        requests:
+          storage: 10Gi
+  - metadata:
+      name: zookeeper-logs
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: local-storage
+      resources:
+        requests:
+          storage: 5Gi
+  podManagementPolicy: OrderedReady

@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  labels:
+    app: redis
+data:
+  redis.conf: |
+    # Redis configuration
+    bind 0.0.0.0
+    port 6379
+    
+    # Persistence
+    save 900 1
+    save 300 10
+    save 60 10000
+    
+    # Directory for RDB and AOF files
+    dir /data
+    
+    # RDB settings
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    
+    # AOF settings
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    
+    # Memory management
+    maxmemory-policy allkeys-lru
+    
+    # Security (optional - uncomment to enable)
+    # requirepass your_password_here
+    
+    # Logging
+    loglevel notice
+    
+    # Network
+    timeout 0
+    tcp-keepalive 300
+    
+    # Client connections
+    maxclients 10000
+    
+    # Slow log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 128

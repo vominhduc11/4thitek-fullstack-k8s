@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-ui-config
+  namespace: kafka
+  labels:
+    app: kafka-ui
+data:
+  application.yml: |
+    kafka:
+      clusters:
+        - name: kafka-cluster
+          bootstrapServers: kafka-service:9092
+          zookeeper: zookeeper-0.zookeeper-headless.kafka.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.kafka.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.kafka.svc.cluster.local:2181
+          properties:
+            security.protocol: PLAINTEXT
+          # Schema Registry (optional - uncomment if you have Schema Registry)
+          # schemaRegistry: http://schema-registry:8081
+          
+    auth:
+      type: LOGIN_FORM
+      
+    spring:
+      security:
+        user:
+          name: admin
+          password: admin123
+          
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,prometheus
+      endpoint:
+        health:
+          show-details: always
+          
+    logging:
+      level:
+        com.provectus: INFO
+        org.apache.kafka: WARN
+        
+    server:
+      port: 8080

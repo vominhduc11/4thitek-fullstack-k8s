@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fe-main
+  labels:
+    app: fe-main
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fe-main
+  template:
+    metadata:
+      labels:
+        app: fe-main
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: multinode-demo
+      containers:
+      - name: fe-main
+        image: fe-main:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
