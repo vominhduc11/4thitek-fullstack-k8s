@@ -14,6 +14,8 @@ spec:
       labels:
         app: redis
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: multinode-demo-m04
       initContainers:
       - name: fix-permissions
         image: busybox:1.35
@@ -52,9 +54,19 @@ spec:
           exec:
             command:
             - redis-cli
+            - -a
+            - Redis-Secure-2024!
             - ping
           initialDelaySeconds: 5
           periodSeconds: 5
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+          runAsGroup: 999
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
       volumes:
       - name: redis-data
         persistentVolumeClaim:

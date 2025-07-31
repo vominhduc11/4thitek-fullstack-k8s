@@ -16,12 +16,29 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: multinode-demo-m02
+      initContainers:
+      - name: fix-permissions
+        image: busybox:1.35
+        command: ['sh', '-c', 'mkdir -p /var/lib/postgresql/data && chown -R 70:70 /var/lib/postgresql/data && chmod -R 755 /var/lib/postgresql/data']
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        securityContext:
+          runAsUser: 0
       containers:
       - name: postgres
         image: postgres:15-alpine
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5432
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 70
+          runAsGroup: 70
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         env:
         - name: POSTGRES_DB
           valueFrom:

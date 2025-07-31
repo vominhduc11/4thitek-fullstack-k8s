@@ -16,9 +16,17 @@ spec:
     spec:
       containers:
       - name: redis-commander
-        image: rediscommander/redis-commander:latest
+        image: rediscommander/redis-commander:v0.8.1
         ports:
         - containerPort: 8081
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         env:
         - name: REDIS_HOSTS
           value: "local:redis-service:6379"

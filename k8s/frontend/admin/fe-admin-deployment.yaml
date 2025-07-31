@@ -18,10 +18,18 @@ spec:
         kubernetes.io/hostname: multinode-demo
       containers:
       - name: fe-admin
-        image: fe-admin:latest
-        imagePullPolicy: Never
+        image: fe-admin:v1.0.0
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         resources:
           requests:
             memory: "64Mi"

@@ -16,6 +16,8 @@ spec:
       labels:
         app: kafka
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: multinode-demo-m04
       initContainers:
       - name: fix-permissions
         image: busybox:1.35
@@ -33,6 +35,11 @@ spec:
           name: kafka
         - containerPort: 9093
           name: kafka-external
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
         command:
         - sh
         - -c

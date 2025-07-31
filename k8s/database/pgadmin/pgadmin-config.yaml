@@ -25,5 +25,4 @@ data:
         }
       }
     }
-  pgpass: |
-    postgres-service:5432:*:postgres:postgres123
+  # pgpass moved to secret for security

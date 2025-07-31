@@ -16,9 +16,17 @@ spec:
     spec:
       containers:
       - name: redis-insight
-        image: redislabs/redisinsight:latest
+        image: redislabs/redisinsight:v2.56
         ports:
         - containerPort: 8001
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         env:
         - name: RITRUSTEDORIGINS
           value: "http://localhost:30081"

@@ -31,8 +31,8 @@ data:
     # Memory management
     maxmemory-policy allkeys-lru
     
-    # Security (optional - uncomment to enable)
-    # requirepass your_password_here
+    # Security - Authentication enabled
+    requirepass Redis-Secure-2024!
     
     # Logging
     loglevel notice

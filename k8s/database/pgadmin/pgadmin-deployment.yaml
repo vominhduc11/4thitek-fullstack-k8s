@@ -18,17 +18,28 @@ spec:
         kubernetes.io/hostname: multinode-demo-m02
       containers:
       - name: pgadmin
-        image: dpage/pgadmin4:latest
+        image: dpage/pgadmin4:8.2
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
         env:
         - name: PGADMIN_DEFAULT_EMAIL
-          value: "admin@example.com"
+          valueFrom:
+            secretKeyRef:
+              name: pgadmin-secret
+              key: PGADMIN_DEFAULT_EMAIL
         - name: PGADMIN_DEFAULT_PASSWORD
-          value: "admin123"
+          valueFrom:
+            secretKeyRef:
+              name: pgadmin-secret
+              key: PGADMIN_DEFAULT_PASSWORD
         - name: PGADMIN_CONFIG_SERVER_MODE
           value: "False"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 5050
+          runAsGroup: 5050
+          allowPrivilegeEscalation: false
         resources:
           requests:
             memory: "256Mi"
@@ -40,7 +51,7 @@ spec:
         - name: pgadmin-config
           mountPath: /pgadmin4/servers.json
           subPath: servers.json
-        - name: pgadmin-config
+        - name: pgadmin-pgpass
           mountPath: /pgpass
           subPath: pgpass
       volumes:
@@ -48,3 +59,7 @@ spec:
         configMap:
           name: pgadmin-config
           defaultMode: 0644
+      - name: pgadmin-pgpass
+        secret:
+          secretName: pgadmin-pgpass-secret
+          defaultMode: 0600

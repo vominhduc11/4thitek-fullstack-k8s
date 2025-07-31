@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(kubectl get:*)",
-      "Bash(kubectl apply:*)"
+      "Bash(kubectl apply:*)",
+      "Bash(kubectl describe:*)",
+      "Bash(kubectl logs:*)",
+      "Bash(kubectl delete:*)",
+      "Bash(kubectl set image:*)"
     ],
     "deny": []
   }

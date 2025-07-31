@@ -10,6 +10,10 @@ echo "🚀 Deploying PostgreSQL to Kubernetes..."
 # Apply Kubernetes manifests in order
 echo "⚙️  Applying Kubernetes manifests..."
 
+# Create Secret first
+echo "🔐 Creating Secret..."
+kubectl apply -f "$K8S_DIR/database/postgres/postgres-secret.yaml"
+
 # Create ConfigMap
 echo "📝 Creating ConfigMap..."
 kubectl apply -f "$K8S_DIR/database/postgres/postgres-configmap.yaml"
@@ -49,10 +53,12 @@ echo "   Host: postgres-service"
 echo "   Port: 5432"
 echo "   Database: 4thitek_db"
 echo "   Username: postgres"
-echo "   Password: postgres123"
+echo "   🔐 Password: Stored in postgres-secret (PostgreSQL-Strong-P@ss2024!)"
 echo ""
 echo "🔗 Port-forward for external access:"
 echo "   kubectl port-forward service/postgres-service 5432:5432"
 echo ""
 echo "🔧 Connect using psql:"
 echo "   kubectl exec -it deployment/postgres -- psql -U postgres -d 4thitek_db"
+echo ""
+echo "ℹ️  Note: Password is now stored in Kubernetes Secret for security"
