@@ -18,14 +18,14 @@ spec:
         kubernetes.io/hostname: multinode-demo
       containers:
       - name: fe-admin
-        image: fe-admin:v1.0.0
+        image: fe-admin:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
         securityContext:
           runAsNonRoot: true
-          runAsUser: 1000
-          runAsGroup: 1000
+          runAsUser: 101
+          runAsGroup: 101
           allowPrivilegeEscalation: false
           capabilities:
             drop:
@@ -49,3 +49,13 @@ spec:
             port: 80
           initialDelaySeconds: 5
           periodSeconds: 5
+        volumeMounts:
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: nginx-run
+          mountPath: /var/run
+      volumes:
+      - name: nginx-cache
+        emptyDir: {}
+      - name: nginx-run
+        emptyDir: {}

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+K8S_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # Deploy Redis Web Interfaces script
 echo "🔴 Deploying Redis Web Interfaces..."
 
@@ -25,27 +29,27 @@ read -p "Choose option (1-4): " choice
 case $choice in
     1)
         echo "🚀 Deploying RedisInsight..."
-        kubectl apply -f ../cache/redis/redis-insight.yaml
+        kubectl apply -f "$K8S_DIR/cache/redis/redis-insight.yaml"
         PORT=30081
         INTERFACE="RedisInsight"
         ;;
     2)
         echo "🚀 Deploying Redis Commander..."
-        kubectl apply -f ../cache/redis/redis-commander.yaml
+        kubectl apply -f "$K8S_DIR/cache/redis/redis-commander.yaml"
         PORT=30082
         INTERFACE="Redis Commander"
         ;;
     3)
         echo "🚀 Deploying phpRedisAdmin..."
-        kubectl apply -f ../cache/redis/phpredisadmin.yaml
+        kubectl apply -f "$K8S_DIR/cache/redis/phpredisadmin.yaml"
         PORT=30083
         INTERFACE="phpRedisAdmin"
         ;;
     4)
         echo "🚀 Deploying all Redis interfaces..."
-        kubectl apply -f ../cache/redis/redis-insight.yaml
-        kubectl apply -f ../cache/redis/redis-commander.yaml
-        kubectl apply -f ../cache/redis/phpredisadmin.yaml
+        kubectl apply -f "$K8S_DIR/cache/redis/redis-insight.yaml"
+        kubectl apply -f "$K8S_DIR/cache/redis/redis-commander.yaml"
+        kubectl apply -f "$K8S_DIR/cache/redis/phpredisadmin.yaml"
         echo ""
         echo "✅ All Redis interfaces deployed!"
         echo ""
@@ -97,4 +101,4 @@ echo "  kubectl get pods | grep redis"
 echo "  kubectl logs deployment/$INTERFACE"
 echo ""
 echo "🗑️  To remove:"
-echo "  kubectl delete -f ../cache/redis/$(echo $INTERFACE | tr '[:upper:]' '[:lower:]' | tr ' ' '-').yaml"
+echo "  kubectl delete -f "$K8S_DIR/cache/redis/$(echo $INTERFACE | tr '[:upper:]' '[:lower:]' | tr ' ' '-').yaml""

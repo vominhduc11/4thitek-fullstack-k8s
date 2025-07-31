@@ -18,7 +18,7 @@ spec:
         kubernetes.io/hostname: multinode-demo
       containers:
       - name: fe-dealer
-        image: fe-dealer:v1.0.0
+        image: fe-dealer:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
@@ -49,3 +49,13 @@ spec:
             port: 80
           initialDelaySeconds: 5
           periodSeconds: 5
+        volumeMounts:
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: nginx-run
+          mountPath: /var/run
+      volumes:
+      - name: nginx-cache
+        emptyDir: {}
+      - name: nginx-run
+        emptyDir: {}

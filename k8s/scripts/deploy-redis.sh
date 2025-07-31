@@ -1,14 +1,18 @@
 #!/bin/bash
 
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+K8S_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # Deploy Redis script
 echo "🚀 Deploying Redis on Kubernetes..."
 
 # Deploy Redis
 echo "🔴 Deploying Redis..."
-kubectl apply -f ../cache/redis/redis-pv-pvc.yaml
-kubectl apply -f ../cache/redis/redis-configmap.yaml
-kubectl apply -f ../cache/redis/redis-deployment.yaml
-kubectl apply -f ../cache/redis/redis-service.yaml
+kubectl apply -f "$K8S_DIR/cache/redis/redis-pv-pvc.yaml"
+kubectl apply -f "$K8S_DIR/cache/redis/redis-configmap.yaml"
+kubectl apply -f "$K8S_DIR/cache/redis/redis-deployment.yaml"
+kubectl apply -f "$K8S_DIR/cache/redis/redis-service.yaml"
 
 # Wait for Redis to be ready
 echo "⏳ Waiting for Redis to be ready..."

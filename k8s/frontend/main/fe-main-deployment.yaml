@@ -18,8 +18,8 @@ spec:
         kubernetes.io/hostname: multinode-demo
       containers:
       - name: fe-main
-        image: fe-main:v1.0.0
-        imagePullPolicy: Never
+        image: fe-main:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
         securityContext:
